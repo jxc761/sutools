@@ -251,7 +251,7 @@ module CWRU
 	end
 =end
 	def CWRU.get_observerId (observer)
-		return observer.get_attribute("cwru_walkman", "id",Time.now.to_i.to_s)
+		return observer.get_attribute("cwru_walkman", "id", Time.now.to_i.to_s)
 	end
 	
 	def CWRU.get_targetId(target)

@@ -1,5 +1,7 @@
 require "sketchup"
 require "#{File.dirname(__FILE__)}/mytools/walkman_tools.rb"
+require "#{File.dirname(__FILE__)}/mytools/export_animation.rb"
+
 # load("/Users/Jing/Library/Application Support/SketchUp 2013/SketchUp/Plugins/walkman_toolbar.rb")
 module CWRU
 	
@@ -67,7 +69,7 @@ module CWRU
 	
 	
 	
-	
+	Sketchup.send_action("showRubyPanel:")
 	
 	UI.add_context_menu_handler do |menu|
 
@@ -75,7 +77,9 @@ module CWRU
 	menu.add_separator
 	menu.add_item("Redraw links") { CWRU.redraw_links}
 	menu.add_item("undraw links") { CWRU.undraw_links}
-
+	menu.add_item("export all animations") { CWRU.export_all_animations}
+	item=menu.add_item("export selection animations") { CWRU.export_selection_animations}
+	menu.set_validation_proc(item){CWRU.export_selection_animations_validation}
 	end
 
 end
