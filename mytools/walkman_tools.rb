@@ -393,34 +393,5 @@ module CWRU
 			
 		end
 	end
-	
 
-	def CWRU.redraw_links()
-		model = Sketchup.active_model
-		definition = model.definitions["cwru_connections"]
-		
-		if definition == nil
-			definition = model.definitions.add "cwru_connections"
-		else
-			definition.entities.clear!
-		end
-		
-		connections = CWRU.get_connections(model)
-		connections.each{ |connection|
-			start_point = CWRU.get_eye_position(connection[0])
-			end_point = CWRU.get_target_position(connection[1])
-			definition.entities.add_cline(start_point, end_point)
-		}
-		model.entities.add_instance(definition, Geom::Transformation.new)
-	end
-	
-	
-	def CWRU.undraw_links()
-		model = Sketchup.active_model
-		definition = model.definitions["cwru_connections"]
-		if definition == nil
-			definition = model.definitions.add "cwru_connections"
-		end
-		definition.entities.clear!
-	end
 end

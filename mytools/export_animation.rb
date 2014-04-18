@@ -42,11 +42,11 @@ module CWRU
 		
 		#First, let’s talk about what full-frame entails. Full-frame digital cameras use a sensor that’s equivalent in size to 35mm film (36 x 24mm), 
 		prompts=["Forward", "Backward", "Left", "Right", 
-			"Distance(m)", "Speed(m/s)", 
-			"Frame Rate(fps)", "Width", "Height", 
+			"Speed(m/s)", "Time(s)", 
+			"FPS(fps)", "Width", "Height", 
 			"FOV(degrees)"]  
 		values=["on", "off", "off", "off", 
-			"5", "1.4", 
+			"1.4", "5",
 			"5", "180", "120", 
 			"35"]
 		flag="on|off" 
@@ -215,6 +215,33 @@ module CWRU
 
 		observer.transformation= t_org
 	end
-
+	
+	
+	# mt: transformation of observer at each frame
+	def CWRU.export_one_sequence(view, observer, target, mt, nframe, image_width, image_hight, fov, export_path, prefix="")
+		torg=observer.transformation
+		
+		#loop for each frame
+		(0...nframe).each{ |frameId|
+			cur_transform = observer.transformation	
+			observer.transformation= mt * cur_transform
+			
+			up = CWRU.get_up(observer)
+			eye_position = CWRU.get_eye_position(observer)
+			view.camera.set(eye_position, target_position, up)
+			
+			# save image out
+			filename=File.join(export_path, prefix + "#{frameId}"+".jpg")
+			Sketchup.set_status_text("Exporting frame #{frameId} to #{filename}")
+			begin
+				view.write_image(filename, image_width, image_height, true, 1.0)
+			rescue
+				UI.messagebox("Error exporting animation frame.  Check animation parameters and retry.")
+				raise
+			end
+		}
+		observer.transformation= torg
+	end
+	
 
 end

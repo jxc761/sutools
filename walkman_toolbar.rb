@@ -1,9 +1,49 @@
 require "sketchup"
 require "#{File.dirname(__FILE__)}/mytools/walkman_tools.rb"
 require "#{File.dirname(__FILE__)}/mytools/export_animation.rb"
+require "#{File.dirname(__FILE__)}/mytools/walkman_random_walk_setting.rb"
+require "#{File.dirname(__FILE__)}/mytools/walkman_visualization.rb"
+require "#{File.dirname(__FILE__)}/mytools/walkman_animation.rb"
+
 
 # load("/Users/Jing/Library/Application Support/SketchUp 2013/SketchUp/Plugins/walkman_toolbar.rb")
+
+
+
 module CWRU
+	def CWRU.show_all_info
+		show_all_observers
+		show_all_targets
+		redraw_links
+		redraw_random_walk_trajectories
+	end
+
+	def CWRU.hide_all_info
+		hide_all_observers
+		hide_all_targets
+		undraw_links
+		undraw_random_walk_trajectories
+	end
+
+	def CWRU.export_images()
+		hide_all_observers
+		hide_all_targets
+		undraw_links
+		
+		walk_opts = CWRU.random_walk_setting()
+		animation_opts = CWRU.animate_setting()
+		model = Sketchup.active_model
+		view = model.active_view
+		
+		CWRU.set_random_walk_setting(model, walk_opts)
+		CWRU.set_animation_setting(model, animation_opts)
+		CWRU.export_random_walk_animations(model, view, walk_opts, animation_opts)
+		
+		show_all_observers
+		show_all_targets
+		
+	end
+
 	
 	OBSERVRE_PATH = "#{File.dirname(__FILE__)}/MyTools/skp/cwru_observer.skp"
 	TARGET_PATH = "#{File.dirname(__FILE__)}/MyTools/skp/cwru_target.skp"
@@ -55,9 +95,21 @@ module CWRU
 	}
 	cmd_look_through.small_icon = "./MyTools/icons/look_through_16.png"
 	cmd_look_through.large_icon = "./MyTools/icons/look_through_24.png"
-	cmd_look_through.menu_text = "look_through"
+	cmd_look_through.menu_text = "look through"
 	cmd_look_through.tooltip = "look_through"
 	cmd_look_through.status_bar_text = "Double click"
+	
+	
+	
+	cmd_export = UI::Command.new("export_random_walk_animation ") {export_images
+		
+	}
+	cmd_export.small_icon = "./MyTools/icons/export_images_16.png"
+	cmd_export.large_icon = "./MyTools/icons/export_images_24.png"
+	cmd_export.menu_text = "export random walking animation"
+	cmd_export.tooltip = "export random walking animation"
+	cmd_export.status_bar_text = "export random walking animation"
+	
 	
 	
 	walkman_toolbar = UI::Toolbar.new("walkman")	
@@ -66,21 +118,42 @@ module CWRU
 	walkman_toolbar.add_item(cmd_edit_connection)
 	walkman_toolbar.add_item(cmd_move_observer)
 	walkman_toolbar.add_item(cmd_look_through)
-	
+	walkman_toolbar.add_item(cmd_export)
 	
 	
 	Sketchup.send_action("showRubyPanel:")
 	
 	UI.add_context_menu_handler do |menu|
 
-	# Add an item to the context menu
-	menu.add_separator
-	menu.add_item("Redraw links") { CWRU.redraw_links}
-	menu.add_item("undraw links") { CWRU.undraw_links}
-	menu.add_item("export all animations") { CWRU.export_all_animations}
-	item=menu.add_item("export selection animations") { CWRU.export_selection_animations}
-	menu.set_validation_proc(item){CWRU.export_selection_animations_validation}
+		# Add an item to the context menu
+		menu.add_separator
+		menu.add_item("export all animations") { CWRU.export_all_animations}
+		item=menu.add_item("export selection animations") { CWRU.export_selection_animations}
+		menu.set_validation_proc(item){CWRU.export_selection_animations_validation}
 	end
+	
+	
+	
+	####
+	# add items to view menu
+	####
+
+	
+	menu =UI.menu("View")
+	menu.add_separator
+	submenu = menu.add_submenu("walkman")
+	item = submenu.add_item("Show all"){ 			 	CWRU.show_all_info 				}
+	item = submenu.add_item("Hide all"){ 				CWRU.hide_all_info				}
+	item = submenu.add_item("Show all cameras"){		CWRU.show_all_observers		}
+	item = submenu.add_item("Hide all cameras"){		CWRU.hide_all_observers		}
+	item = submenu.add_item("Show all focal points"){	CWRU.show_all_targets		}
+	item = submenu.add_item("Hidel all focal points"){	CWRU.hide_all_targets		}
+	item = submenu.add_item("Redraw all links"){		CWRU.redraw_links 			}
+	item = submenu.add_item("Undraw all links"){		CWRU.undraw_links			}
+	item = submenu.add_item("Redraw trajectories"){		CWRU.redraw_random_walk_trajectories	}
+	item = submenu.add_item("Undraw trajectories"){		CWRU.undraw_random_walk_trajectories	}
+	
+	
 
 end
 

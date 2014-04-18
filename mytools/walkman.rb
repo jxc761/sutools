@@ -41,9 +41,14 @@ module CWRU
  		  end
  	 end
 =end
-	 ###########################################
-	 # target
-	 ######################################
+	 
+
+	 
+	 
+	 
+	###########################################
+	# target
+	######################################
 	def CWRU.get_target_definition(model)
 		target_definition = model.definitions["cwru_target"]
 		if target_definition == nil
@@ -89,13 +94,18 @@ module CWRU
  	def CWRU.new_target(model, transformation)
 		
  		definition = get_target_definition(model)
+		
  		target = model.entities.add_instance(definition, transformation)
  		set_targetId(target, Time.now.to_i.to_s)
  		target.add_observer(CEntityObserver.new)
+		
+		layer = CWRU.get_cwru_layer(model, "cwru_target_layer")
+		target.layer= layer
+		
 		return target
  	end
-
-
+	
+	
 	#####
 	#observer
 	#####
@@ -104,6 +114,10 @@ module CWRU
  		observer = model.entities.add_instance(definition, transformation)
  		set_observerId(observer, Time.now.to_i.to_s)
  		observer.add_observer(CEntityObserver.new)
+		
+		layer = CWRU.get_cwru_layer(model, "cwru_observer_layer")
+		observer.layer= layer
+		
 		return observer
  	end
 	
@@ -222,6 +236,14 @@ module CWRU
 		save_connections(model, new_connections)
 	end
 	
+	def CWRU.remove_all_connections(model)
+		model.set_attribute('cwru_walkman', 'connections', "")
+	end
+	
+	def CWRU.set_connections(model, attrs)
+		model.set_attribute('cwru_walkman', 'connections', attrs)
+	end
+	
 =begin
 	def CWRU.delete_target_related_connections(connections, targetId)		
 		
@@ -266,5 +288,31 @@ module CWRU
 		target.set_attribute("cwru_walkman", "id", id)
 	end
 	
+	def CWRU.get_cwru_ID(ent)
+		return ent.get_attribute("cwru_walkman", "id", Time.now.to_i.to_s)
+	end
+	
+	def CWRU.set_cwru_ID(ent)
+		ent.set_attribute("cwru_walkman", "id", Time.now.to_i.to_s)
+	end
+	
+	def CWRU.get_cwru_layer(model, name)
+		layer = model.layers[name]
+		if  layer == nil
+			layer = model.layers.add(name)
+		end
+		
+		return layer
+	end
+
+	def CWRU.remove_all_cwru_instances(model, def_name)
+		definition = model.definitions[def_name]
+		if definition == nil
+			return nil
+		end
+		
+		instances = definition.instances
+		instances.each{|inst| inst.erase!}
+	end
 
 end
