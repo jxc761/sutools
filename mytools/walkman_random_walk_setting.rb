@@ -32,25 +32,27 @@ module CWRU
 	
 		#First, let’s talk about what full-frame entails. Full-frame digital cameras use a sensor that’s equivalent in size to 35mm film (36 x 24mm), 
 		seed = Time.now.to_i
-		prompts =["RandomSeed", "\#move_direction","Duration(s)", ]
-		values  =[Time.now.to_i.to_s, "5",  "5"]
+		prompts =["RandomSeed", "slowest", "fastest", "\#move_direction", "Duration(s)" ]
+		values  =[1234, 0.1, 0.5, "5",  "3"]
 		results=UI.inputbox(prompts, values, "Configure Random Walking")
 
 		return nil unless results
 		random_walk_options = {
 			"seed" 			=> results[0].to_i,
-			"ndirections" 		=> results[1].to_i,
-			"duration" 			=> results[2].to_f,
+			"slowest"			=> results[1].to_f,
+			"fastest"			=> results[2].to_f,
+			"ndirections" 		=> results[3].to_i,
+			"duration" 			=> results[4].to_f,
 		}
 	
-		random_walk_options.each {|key, value| puts "#{key} is #{value}" }
+		#random_walk_options.each {|key, value| puts "#{key} is #{value}" }
 		return random_walk_options
 	end
 	
 	
 	def CWRU.animate_setting()
 		prompts =["FPS", "Width(pt)", "Height(pt)", "FOV(degrees)"]
-		values  =["24", "180", "120", "35"]
+		values  =["24", "32", "32", "35"]
 		results =UI.inputbox(prompts, values, "Animation Setting")
 		return nil unless results
 		
@@ -83,19 +85,23 @@ module CWRU
 	
 	def CWRU.set_random_walk_setting(model, options)
  		attrs = ""
-		attrs << options["seed"].to_s << ":"		
+		attrs << options["seed"].to_s << ":"	
+		attrs << options["slowest"].to_s << ":"	
+		attrs << options["fastest"].to_s << ":"	
 		attrs << options["ndirections"].to_s << ":" 
 		attrs << options["duration"].to_s << ":" 	
 		model.set_attribute("cwru_walkman", "cwru_random_walk", attrs)
 	end
 	
 	def CWRU.get_random_walk_setting(model)
-		attrs = model.get_attribute("cwru_walkman", "cwru_random_walk", "1234:2:2:")
+		attrs = model.get_attribute("cwru_walkman", "cwru_random_walk", "1234:0.5:0.7:2:2:")
 		substrs = attrs.split(':')
 		options = {}
 		options["seed"] = substrs[0].to_i
-		options["ndirections"] = substrs[1].to_i
-		options["duration"] = substrs[2].to_f
+		options["slowest"] = substrs[1].to_f
+		options["fastest"] = substrs[2].to_f
+		options["ndirections"] = substrs[3].to_i
+		options["duration"] = substrs[4].to_f
 		return options
 	end
 	

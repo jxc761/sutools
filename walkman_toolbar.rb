@@ -26,12 +26,16 @@ module CWRU
 	end
 
 	def CWRU.export_images()
-		hide_all_observers
-		hide_all_targets
-		undraw_links
+		#hide_all_observers
+		#hide_all_targets
+		#undraw_links
 		
 		walk_opts = CWRU.random_walk_setting()
 		animation_opts = CWRU.animate_setting()
+		if walk_opts == nil || animation_opts == nil
+			return
+		end
+		
 		model = Sketchup.active_model
 		view = model.active_view
 		
@@ -39,8 +43,8 @@ module CWRU
 		CWRU.set_animation_setting(model, animation_opts)
 		CWRU.export_random_walk_animations(model, view, walk_opts, animation_opts)
 		
-		show_all_observers
-		show_all_targets
+		#show_all_observers
+		#show_all_targets
 		
 	end
 

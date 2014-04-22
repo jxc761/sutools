@@ -1,5 +1,5 @@
 require "sketchup"
-# load ("/Users/Jing/Library/Application Support/SketchUp 2013/SketchUp/Plugins/mytools/export_animation.rb")
+# load ("/Users/Jing/Library/Application Support/SketchUp 2013/SketchUp/Plugins/mytools/walkman_animation.rb")
 module CWRU
 	
 	def CWRU.generate_observer_index(model)
@@ -157,8 +157,8 @@ module CWRU
 		
 		nframe = (duration * fps).to_i
 		
-		slowest = 0.5.m / (fps * 1.0)
-		fastest = 2.5.m / (fps * 1.0)
+		slowest = walk_opts["slowest"].m / (fps * 1.0)
+		fastest = walk_opts["fastest"].m / (fps * 1.0)
 		
 		# new materials
 		
@@ -211,10 +211,12 @@ module CWRU
 		# load parameters
 		# walk_opts = CWRU.get_random_walk_setting(model)
 		# animation_opts = CWRU.get_animation_setting(model)
+
 		
 		seed = walk_opts["seed"]
 		ndirections = walk_opts["ndirections"]
 		duration = walk_opts["duration"]
+		
 		
 		image_width = animation_opts["width"]
 		image_height = animation_opts["height"]
@@ -222,16 +224,25 @@ module CWRU
 		fps = animation_opts["fps"]
 		path_to_save_to = animation_opts["path_to_save_to"]
 		
-		Dir.mkdir(path_to_save_to)
+		
+		slowest = walk_opts["slowest"].m / (fps * 1.0)
+		fastest = walk_opts["fastest"].m / (fps * 1.0)
+
+		Dir.mkdir(path_to_save_to) unless File.exist?(path_to_save_to)
+		
 		nframe = (duration * fps).to_i
 		
-		slowest = 0.5.m / (fps * 1.0)
-		fastest = 2.5.m / (fps * 1.0)
+	
 		
 		# begin to export 
 		srand(seed)
 		connections = CWRU.get_connections(model)
 		connections.each{|connection|
+			#result = UI.messagebox('Continue?', MB_YESNO)
+			#if result != IDYES
+			#	return
+		    #end
+			
 			observer = connection[0]
 			target = connection[1]
 			observerId=CWRU.get_observerId(observer)
@@ -257,7 +268,7 @@ module CWRU
 			direction.length= speed
 			mts[i] = Geom::Transformation.translation direction
 			
-			puts "angle:#{angle}, speed:#{speed}"
+			# puts "angle:#{angle}, speed:#{speed}"
 		}
 		return mts
 	end
@@ -268,7 +279,11 @@ module CWRU
 	
 		mts.each_index{ |index|
 			mt = mts[index]
+	
 			cur_dir = File.join(export_path, prefix + "D#{index}")
+			if File.exist?(cur_dir)
+				next
+			end
 			Dir.mkdir(cur_dir)		
 			CWRU.export_one_sequence(view, observer, target, mt, nframe, image_width, image_height, fov, cur_dir)
 		}
@@ -293,16 +308,19 @@ module CWRU
 			# save image out
 			filename=File.join(export_path, prefix + "#{frameId}"+".jpg")
 			Sketchup.set_status_text("Exporting frame #{frameId} to #{filename}")
-			begin
-				view.write_image(filename, image_width, image_height, true, 1.0)
-			rescue
-				UI.messagebox("Error exporting animation frame.  Check animation parameters and retry.")
-				raise
-			end
+			CWRU.write_image(view, filename, image_width, image_height)
 		}
-		puts observer.transformation.to_a
 		
 		observer.transformation= torg
+	end
+	
+	def CWRU.write_image(view, filename, image_width, image_height)
+		begin
+			view.write_image(filename, image_width, image_height, true, 1.0)
+		rescue
+			UI.messagebox("Error exporting animation frame.  Check animation parameters and retry.")
+			raise
+		end
 	end
 	
 
