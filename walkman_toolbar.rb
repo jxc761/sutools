@@ -2,8 +2,10 @@ require "sketchup"
 require "#{File.dirname(__FILE__)}/mytools/walkman_tools.rb"
 require "#{File.dirname(__FILE__)}/mytools/export_animation.rb"
 require "#{File.dirname(__FILE__)}/mytools/walkman_random_walk_setting.rb"
-require "#{File.dirname(__FILE__)}/mytools/walkman_visualization.rb"
-require "#{File.dirname(__FILE__)}/mytools/walkman_animation.rb"
+require "#{File.dirname(__FILE__)}/mytools/animation.rb"
+
+#require "#{File.dirname(__FILE__)}/mytools/walkman_visualization.rb"
+#require "#{File.dirname(__FILE__)}/mytools/walkman_animation.rb"
 
 
 # load("/Users/Jing/Library/Application Support/SketchUp 2013/SketchUp/Plugins/walkman_toolbar.rb")
@@ -11,19 +13,19 @@ require "#{File.dirname(__FILE__)}/mytools/walkman_animation.rb"
 
 
 module CWRU
-	def CWRU.show_all_info
-		show_all_observers
-		show_all_targets
-		redraw_links
-		redraw_random_walk_trajectories
-	end
+	#def CWRU.show_all_info
+	#	show_all_observers
+	#	show_all_targets
+	#	redraw_links
+	#	redraw_random_walk_trajectories
+	#end
 
-	def CWRU.hide_all_info
-		hide_all_observers
-		hide_all_targets
-		undraw_links
-		undraw_random_walk_trajectories
-	end
+	#def CWRU.hide_all_info
+	#	hide_all_observers
+	#	hide_all_targets
+	#	undraw_links
+	#	undraw_random_walk_trajectories
+	#end
 
 	def CWRU.export_images()
 		#hide_all_observers
@@ -104,15 +106,15 @@ module CWRU
 	cmd_look_through.status_bar_text = "Double click"
 	
 	
-	
-	cmd_export = UI::Command.new("export_random_walk_animation ") {export_images
-		
-	}
-	cmd_export.small_icon = "./MyTools/icons/export_images_16.png"
-	cmd_export.large_icon = "./MyTools/icons/export_images_24.png"
-	cmd_export.menu_text = "export random walking animation"
-	cmd_export.tooltip = "export random walking animation"
-	cmd_export.status_bar_text = "export random walking animation"
+#	
+#	cmd_export = UI::Command.new("export_random_walk_animation ") {export_images
+#		
+#	}
+#	cmd_export.small_icon = "./MyTools/icons/export_images_16.png"
+#	cmd_export.large_icon = "./MyTools/icons/export_images_24.png"
+#	cmd_export.menu_text = "export random walking animation"
+#	cmd_export.tooltip = "export random walking animation"
+#	cmd_export.status_bar_text = "export random walking animation"
 	
 	
 	
@@ -122,7 +124,7 @@ module CWRU
 	walkman_toolbar.add_item(cmd_edit_connection)
 	walkman_toolbar.add_item(cmd_move_observer)
 	walkman_toolbar.add_item(cmd_look_through)
-	walkman_toolbar.add_item(cmd_export)
+#	walkman_toolbar.add_item(cmd_export)
 	
 	
 	Sketchup.send_action("showRubyPanel:")
@@ -136,13 +138,22 @@ module CWRU
 		menu.set_validation_proc(item){CWRU.export_selection_animations_validation}
 	end
 	
+    UI.menu("Camera").add_item("start animation") {
+		walk_opts = CWRU.random_walk_setting()
+		animation_opts = CWRU.animate_setting()
+		if walk_opts != nil && animation_opts != nil
+			Sketchup.active_model.active_view.animation= FixationAnimation.new(walk_opts, animation_opts)
+		end
+    	
+    }
 	
-	
+    UI.menu("Camera").add_item("stop animation") {
+      Sketchup.active_model.active_view.animation = nil
+    }
 	####
 	# add items to view menu
 	####
-
-	
+=begin	
 	menu =UI.menu("View")
 	menu.add_separator
 	submenu = menu.add_submenu("walkman")
@@ -157,7 +168,7 @@ module CWRU
 	item = submenu.add_item("Redraw trajectories"){		CWRU.redraw_random_walk_trajectories	}
 	item = submenu.add_item("Undraw trajectories"){		CWRU.undraw_random_walk_trajectories	}
 	
-	
+=end	
 
 end
 

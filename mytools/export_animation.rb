@@ -42,11 +42,11 @@ module CWRU
 		
 		#First, let’s talk about what full-frame entails. Full-frame digital cameras use a sensor that’s equivalent in size to 35mm film (36 x 24mm), 
 		prompts=["Forward", "Backward", "Left", "Right", 
-			"Speed(m/s)", "Time(s)", 
+			"distance", "speed", 
 			"FPS(fps)", "Width", "Height", 
 			"FOV(degrees)"]  
 		values=["on", "off", "off", "off", 
-			"1.4", "5",
+			"2.8", "1.4",
 			"5", "180", "120", 
 			"35"]
 		flag="on|off" 
@@ -67,7 +67,7 @@ module CWRU
 			"left" 				=> results[2]=="on" ? true : false,
 			"right" 			=> results[3]=="on" ? true : false,
 			"distance" 			=> results[4].to_f,
-			"speed" 			=> results[5].to_f,
+			"speed" 		    => results[5].to_f,
 			"fps" 				=> results[6].to_i,
 			"width" 			=> results[7].to_i,
 			"height" 			=> results[8].to_i,
@@ -164,7 +164,7 @@ module CWRU
 		forward 	= v0 - t_org.yaxis
 		backward 	= v0 + t_org.yaxis
 		
-		speed			= options["speed"]  / options["fps"] # m/frame
+		speed			= options["speed"].m  / options["fps"] # m/frame
 		puts speed
 		left.length= speed
 		right.length= speed
@@ -182,13 +182,14 @@ module CWRU
 		total_frame_number = ( (options["distance"] / options["speed"]) * options["fps"] ).to_i
 		image_width = options["width"]
 		image_height = options["height"]
-		
+		puts "total_frame_number"
+		puts total_frame_number
 		#loop for each direction
 		dnames.each{ |dname|
 			next unless options[dname]
 			dv = directions[dname]
-			mv = dv.transform(Geom::Transformation.scaling(speed.m))
-			transform=Geom::Transformation.translation(mv)
+			#mv = dv.transform(Geom::Transformation.scaling(speed.m))
+			transform=Geom::Transformation.translation(dv)
 			cur_dir = File.join(export_path, dname)
 			Dir.mkdir(cur_dir)
 			#loop for each frame

@@ -247,8 +247,10 @@ module CWRU
 			target = connection[1]
 			observerId=CWRU.get_observerId(observer)
 			targetId = CWRU.get_targetId(target)
+			# axis = observer.transformation
+			# 
 			mts = CWRU.generate_random_mts(observer, slowest, fastest, ndirections)
-			CWRU.export_one_pair(view, observer, target, mts, nframe, image_width, image_height, fov, path_to_save_to, "C#{observerId}_F#{targetId}")
+			CWRU.export_one_pair(view, observer, target, mts, nframe, image_width, image_height, fov, path_to_save_to, "C#{observerId}_F#{targetId}_")
 		}
 		
 	end
@@ -282,6 +284,7 @@ module CWRU
 	
 			cur_dir = File.join(export_path, prefix + "D#{index}")
 			if File.exist?(cur_dir)
+				puts "#{cur_dir} exists!"
 				next
 			end
 			Dir.mkdir(cur_dir)		
