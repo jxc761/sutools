@@ -22,6 +22,35 @@ module CWRU
 		return mts
 	end
 	
+	def CWRU.transf_to_s(transf)
+		array = transf.to_a
+		s = ""
+		array.each{|a| s << "#{a}:"}
+		return s
+	end
+	
+	def CWRU.transf_from_s(s)
+		
+		array = Array.new
+		ss = s.split(":")
+		ss.each{|sss|
+			array << sss.to_f
+		}
+		transf = Geom::Transformation.new array
+		return transf
+	end
+	
+	def CWRU.save_out_mts(mts, path)
+		file = File.open(path, "w")
+		
+		mts.each{ |mt|
+			file.puts CWRU.transf_to_s(mt)
+		}
+		
+		file.close
+		
+	end
+	
 	class FixationAnimation
 		def initialize(walk_opts, animation_opts)
 			model=Sketchup.active_model
@@ -44,12 +73,12 @@ module CWRU
 			@nframes = (@duration * @fps).to_i
 			Dir.mkdir(@path_to_save_to) unless File.exist?(@path_to_save_to)
 			
-			
 			@connections = CWRU.get_connections(model)
 			@cur_connection_index= 0
 			@cur_frame_index = 0
 			@cur_mts_index = 0
-
+			
+			
 			if startNewConnection()
 			  startNewDirection()
 			end
@@ -62,11 +91,19 @@ module CWRU
 			
 			@cur_observer = @connections[@cur_connection_index][0]
 			@cur_target 	= @connections[@cur_connection_index][1]
-			@cur_mts = CWRU.generate_random_mts(@cur_observer, @slowest, @fastest, @ndirections)
+			
 			observerId=CWRU.get_observerId(@cur_observer)
 			targetId = CWRU.get_targetId(@cur_target)
 			@cur_prefix = "C#{observerId}_F#{targetId}_"
 			@cur_obs_org_transform = @cur_observer.transformation
+			
+			###############
+			# for each connection, it will generate the same set of motion vector
+			###############
+			srand(@seed)
+			@cur_mts = CWRU.generate_random_mts(@cur_observer, @slowest, @fastest, @ndirections)
+			CWRU.save_out_mts(@cur_mts, File.join(@path_to_save_to, "#{@cur_prefix}_mts.txt"))
+			
 			return true
 		end
 		
@@ -118,8 +155,9 @@ module CWRU
 			@cur_frame_index += 1
 			if @cur_frame_index >= @nframes
 			  # call finish_one_direction
+			  @cur_observer.transformation=@cur_obs_org_transform
 			  @cur_mts_index +=1
-			  
+			 
 			  if @cur_mts_index >= @ndirections
 				# call finish_one_pair
 				@cur_connection_index +=1
